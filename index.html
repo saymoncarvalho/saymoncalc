@@ -387,6 +387,37 @@
             transform: translateY(-1px);
         }
 
+        .share-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #00ffc8, #00d4a8);
+            color: #0a1e2e;
+            border: none;
+            border-radius: 20px;
+            font-size: 1.3em;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 25px rgba(0, 255, 200, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 35px rgba(0, 255, 200, 0.6);
+        }
+
+        .share-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .share-btn.visible {
+            display: block;
+        }
+
         /* Results Section - Bento Grid Style */
         .results {
             display: none;
@@ -502,7 +533,6 @@
             <div class="header-content">
                 <img src="moeda.png" alt="Moeda" class="coin-image">
                 <h1>Super Calculadora de Rendimentos</h1>
-                <img src="moeda.png" alt="Moeda" class="coin-image">
             </div>
             <p class="subtitle">@pipocadiagonall</p>
         </div>
@@ -546,6 +576,7 @@
 
             <div class="bento-item item-button">
                 <button class="calculate-btn" onclick="calcular()">🚀 Calcular Rendimento</button>
+                <button class="share-btn" id="shareBtn" onclick="compartilhar()">📤 Compartilhar Resultados</button>
             </div>
         </div>
 
@@ -715,8 +746,202 @@
             // Mostrar div de resultados
             document.getElementById('results').style.display = 'block';
 
+            // Mostrar botão de compartilhar
+            document.getElementById('shareBtn').classList.add('visible');
+
             // Scroll suave até os resultados
             document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        async function compartilhar() {
+            const deposito = parseFloat(document.getElementById('deposito').value) || 0;
+            const selic = parseFloat(document.getElementById('selic').value) || 0;
+            const cdiPercent = parseFloat(document.getElementById('cdi').value) || 0;
+            const dias = parseInt(document.getElementById('dias').value) || 0;
+            const aporteMensal = parseFloat(document.getElementById('aporteMensal').value) || 0;
+            
+            const valorInvestido = document.getElementById('valorInvestido').textContent;
+            const totalAportes = document.getElementById('totalAportes').textContent;
+            const rendimentoBruto = document.getElementById('rendimentoBruto').textContent;
+            const impostoRenda = document.getElementById('impostoRenda').textContent;
+            const rendimentoLiquido = document.getElementById('rendimentoLiquido').textContent;
+            const valorFinal = document.getElementById('valorFinal').textContent;
+            
+            // Gerar a imagem
+            const canvas = document.createElement('canvas');
+            canvas.width = 1080;
+            canvas.height = 1920;
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradiente
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#0a1e2e');
+            gradient.addColorStop(0.5, '#1a3a4a');
+            gradient.addColorStop(1, '#0f2633');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grid pattern
+            ctx.strokeStyle = 'rgba(0, 255, 200, 0.05)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < canvas.height; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+            
+            // Carregar e desenhar a moeda
+            const moeda = new Image();
+            moeda.src = 'moeda.png';
+            
+            await new Promise((resolve) => {
+                moeda.onload = resolve;
+            });
+            
+            // Desenhar moeda no topo
+            ctx.drawImage(moeda, canvas.width / 2 - 100, 80, 200, 200);
+            
+            // Título
+            ctx.fillStyle = '#D4A574';
+            ctx.font = 'bold 64px "Segoe UI"';
+            ctx.textAlign = 'center';
+            ctx.fillText('Super Calculadora', canvas.width / 2, 340);
+            ctx.fillText('de Rendimentos', canvas.width / 2, 410);
+            
+            // Subtítulo
+            ctx.fillStyle = '#00ffc8';
+            ctx.font = '36px "Segoe UI"';
+            ctx.fillText('@pipocadiagonall', canvas.width / 2, 470);
+            
+            // Card principal
+            ctx.fillStyle = 'rgba(15, 38, 51, 0.8)';
+            ctx.beginPath();
+            ctx.roundRect(60, 540, canvas.width - 120, 1280, 30);
+            ctx.fill();
+            
+            // Borda do card
+            ctx.strokeStyle = 'rgba(0, 255, 200, 0.3)';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            let yPos = 640;
+            const lineHeight = 80;
+            
+            // Seção: Dados do Investimento
+            ctx.fillStyle = '#00ffc8';
+            ctx.font = 'bold 42px "Segoe UI"';
+            ctx.textAlign = 'left';
+            ctx.fillText('📊 DADOS DO INVESTIMENTO', 120, yPos);
+            yPos += lineHeight;
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '32px "Segoe UI"';
+            ctx.fillText(`Depósito inicial: ${formatarMoeda(deposito)}`, 120, yPos);
+            yPos += lineHeight - 10;
+            
+            ctx.fillText(`Taxa Selic: ${selic}% ao ano`, 120, yPos);
+            yPos += lineHeight - 10;
+            
+            ctx.fillText(`CDI: ${cdiPercent}%`, 120, yPos);
+            yPos += lineHeight - 10;
+            
+            ctx.fillText(`Período: ${dias} dias`, 120, yPos);
+            yPos += lineHeight - 10;
+            
+            if (aporteMensal > 0) {
+                ctx.fillText(`Aporte mensal: ${formatarMoeda(aporteMensal)}`, 120, yPos);
+                yPos += lineHeight - 10;
+            }
+            
+            yPos += 40;
+            
+            // Linha divisória
+            ctx.strokeStyle = 'rgba(0, 255, 200, 0.2)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(120, yPos);
+            ctx.lineTo(canvas.width - 120, yPos);
+            ctx.stroke();
+            
+            yPos += 60;
+            
+            // Seção: Resultados
+            ctx.fillStyle = '#D4A574';
+            ctx.font = 'bold 42px "Segoe UI"';
+            ctx.fillText('💎 RESULTADOS', 120, yPos);
+            yPos += lineHeight;
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '32px "Segoe UI"';
+            ctx.fillText(`Investido inicial: ${valorInvestido}`, 120, yPos);
+            yPos += lineHeight - 10;
+            
+            if (aporteMensal > 0) {
+                ctx.fillText(`Total aportes: ${totalAportes}`, 120, yPos);
+                yPos += lineHeight - 10;
+            }
+            
+            ctx.fillText(`Rendimento bruto: ${rendimentoBruto}`, 120, yPos);
+            yPos += lineHeight - 10;
+            
+            ctx.fillText(`Imposto de Renda: ${impostoRenda}`, 120, yPos);
+            yPos += lineHeight - 10;
+            
+            ctx.fillText(`Rendimento líquido: ${rendimentoLiquido}`, 120, yPos);
+            yPos += lineHeight + 20;
+            
+            // Valor final (destaque)
+            ctx.fillStyle = 'rgba(0, 255, 200, 0.2)';
+            ctx.beginPath();
+            ctx.roundRect(100, yPos - 50, canvas.width - 200, 140, 20);
+            ctx.fill();
+            
+            ctx.fillStyle = '#00ffc8';
+            ctx.font = 'bold 38px "Segoe UI"';
+            ctx.textAlign = 'center';
+            ctx.fillText('🎯 VALOR FINAL TOTAL', canvas.width / 2, yPos);
+            
+            ctx.fillStyle = '#D4A574';
+            ctx.font = 'bold 72px "Segoe UI"';
+            ctx.fillText(valorFinal, canvas.width / 2, yPos + 70);
+            
+            // Converter canvas para blob
+            canvas.toBlob(async (blob) => {
+                const file = new File([blob], 'rendimentos.png', { type: 'image/png' });
+                
+                // Tentar compartilhar a imagem
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Meus Resultados de Investimento',
+                            text: '💰 Confira meus resultados na Super Calculadora de Rendimentos!'
+                        });
+                    } catch (err) {
+                        if (err.name !== 'AbortError') {
+                            baixarImagem(canvas);
+                        }
+                    }
+                } else {
+                    // Se não pode compartilhar, baixa a imagem
+                    baixarImagem(canvas);
+                }
+            }, 'image/png');
+        }
+        
+        function baixarImagem(canvas) {
+            const link = document.createElement('a');
+            link.download = 'meus-rendimentos.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            alert('✅ Imagem baixada! Agora você pode compartilhar nas redes sociais.');
         }
 
         function formatarMoeda(valor) {
